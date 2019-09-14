@@ -1,0 +1,26 @@
+{
+  "name": "homebridge-lawnmower",
+  "version": "0.0.1",
+  "author": "Thorsten Pohl",
+  "description": "Gets about lawnmowers from the gardena cloud.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "MIT",
+  "engines": {
+    "homebridge": ">=0.2.0",
+    "node": ">=0.12.0"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "lawn mower",
+    "gardena",
+    "automower",
+    "homekit"
+  ],
+  "dependencies": {
+    "request": "^2.65.0",
+    "request-promise-native": "^1.0.5"
+  }
+}
