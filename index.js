@@ -1,5 +1,6 @@
-var Service, Characteristic;
 const rp = require('request-promise-native');
+
+let Service, Characteristic;
 
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
@@ -37,6 +38,7 @@ MyRobo.prototype = {
       rp(options)
         .then(function (response) {
           const data = response.data;
+          me.log("getToken", data);
           const expires = Date.now() + data['attributes']['expires_in'] - 5000;
           me.token = {
             token: data.id,
@@ -216,13 +218,13 @@ MyRobo.prototype = {
         }
     */
 
-    this.informationService = informationService;
     /*
+    this.informationService = informationService;
     this.batteryService = batteryService;
     this.humidityService = humidityService;
     this.switchService = switchService;
-     */
     this.fanService = fanService;
+     */
 
     return this.services;
   },

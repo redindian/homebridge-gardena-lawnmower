@@ -1,7 +1,7 @@
 {
   "name": "homebridge-lawnmower",
-  "version": "0.0.1",
-  "author": "Thorsten Pohl",
+  "version": "0.0.2",
+  "author": "Red Indian",
   "description": "Gets about lawnmowers from the gardena cloud.",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,17 @@
     "homekit"
   ],
   "dependencies": {
+    "homebridge": ">=0.2.0",
     "request": "^2.65.0",
     "request-promise-native": "^1.0.5"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redindian/homebridge-lawnmower.git"
+  },
+  "bugs": {
+    "url": "https://github.com/redindian/homebridge-lawnmower/issues"
+  },
+  "homepage": "https://github.com/redindian/homebridge-lawnmower#readme"
 }
