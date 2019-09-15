@@ -1,3 +1,5 @@
+const API_URI = 'https://smart.gardena.com/v1/';
+
 const rp = require('request-promise-native');
 
 let Service, Characteristic;
@@ -30,7 +32,7 @@ MyRobo.prototype = {
       }
       const options = {
         method: 'POST',
-        uri: 'https://iam-api.dss.husqvarnagroup.net/api/v3/token',
+        uri: API_URI + 'auth/token',
         body: {data: {type: 'token', attributes: {username: this.username, password: this.password}}},
         json: true // Automatically stringifies the body to JSON
       };
@@ -49,7 +51,7 @@ MyRobo.prototype = {
           resolve(me.token.token);
         })
         .catch(function (err) {
-          me.log("Cannot get Token.", err);
+          me.log("Cannot get Token.", {options}, err.statusCode, err.statusMessage);
           reject(err);
         });
     });
@@ -60,7 +62,7 @@ MyRobo.prototype = {
       if (me.mowerId) {
         resolve(me.mowerId);
       } else {
-        const err = "Please set Mover ID in config.";
+        const err = "Please set Mower ID (mower-id) in config.";
         me.log("Cannot get Mower ID", err);
         reject(err);
       }
@@ -71,14 +73,14 @@ MyRobo.prototype = {
 
     const mowerId = await this.getMowerId();
     const locationId = this.locationId;
-    this.log('getMowerOnCharacteristic', {mowerId, locationId});
     const token = await this.getToken();
+
     this.log('getMowerOnCharacteristic', {mowerId, locationId, token});
 
     const options = {
-      uri: 'https://smart.gardena.com/sg-1/devices/' + mowerId,
+      uri: API_URI + 'devices/' + mowerId,
       qs: {
-        locationid: locationId
+        locationId: locationId
       },
       headers: {
         'Authorization': 'Bearer ' + token
@@ -90,8 +92,8 @@ MyRobo.prototype = {
       .then(function (response) {
         me.log('getMowerOnCharacteristic', response);
 
-        const state = response && response['devices'] ? response['devices']['device_state'] : '';
-        let mowing = 0;
+        const state = response && response['devices'] ? response['devices']['device_state'] : 'ok';
+        let mowing = 1;
         if (state === 'ok') {
           mowing = 0;
         }
@@ -99,7 +101,7 @@ MyRobo.prototype = {
         next(null, mowing);
       })
       .catch(function (err) {
-        me.log("Cannot get mower.", err);
+        me.log("Cannot get mower status.", {options}, err.statusCode, err.statusMessage);
         next(err);
       });
   },
@@ -119,10 +121,10 @@ MyRobo.prototype = {
       }
       const options = {
         method: 'POST',
-        uri: 'https://smart.gardena.com/sg-1/devices/' + mowerId + '/mower/command',
+        uri: API_URI + 'devices/' + mowerId + '/mower/command',
         body: body,
         qs: {
-          locationid: locationId
+          locationId: locationId
         },
         headers: {
           'Authorization': 'Bearer ' + token
@@ -136,7 +138,7 @@ MyRobo.prototype = {
           resolve(response);
         })
         .catch(function (err) {
-          me.log("Cannot send command.", err);
+          me.log("Cannot send command.", {options}, err.statusCode, err.statusMessage);
           reject(err);
         });
     });
