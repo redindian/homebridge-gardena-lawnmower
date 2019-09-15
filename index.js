@@ -66,7 +66,8 @@ MyRobo.prototype = {
   },
   getMowerOnCharacteristic: async function (next) {
     const mowerId = await this.getMowerId();
-    const locationId = await this.locationId;
+    const locationId = this.locationId;
+    this.log('getMowerOnCharacteristic', {mowerId, locationId});
     const token = await this.getToken();
 
     const options = {
@@ -95,7 +96,7 @@ MyRobo.prototype = {
     const me = this;
 
     const mowerId = await this.getMowerId();
-    const locationId = await this.locationId;
+    const locationId = this.locationId;
     const token = await this.getToken();
 
     return new Promise((resolve, reject) => {
@@ -120,7 +121,7 @@ MyRobo.prototype = {
 
       rp(options)
         .then(function (response) {
-          this.log('sendMowerCommand', response);
+          me.log('sendMowerCommand', response);
           resolve(response);
         })
         .catch(function (err) {
@@ -131,6 +132,8 @@ MyRobo.prototype = {
   },
 
   setMowerOnCharacteristic: function (on, next) {
+    this.log('setMowerOnCharacteristic', {on});
+
     if (on) {
       this.sendMowerCommand('start_override_timer', {
         duration: 60
