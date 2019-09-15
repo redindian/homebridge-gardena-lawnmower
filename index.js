@@ -83,7 +83,8 @@ MyRobo.prototype = {
         locationId: locationId
       },
       headers: {
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + token,
+        'Authorization-Provider': 'husqvarna',
       },
       json: true // Automatically parses the JSON string in the response
     };
@@ -127,7 +128,8 @@ MyRobo.prototype = {
           locationId: locationId
         },
         headers: {
-          'Authorization': 'Bearer ' + token
+          'Authorization': 'Bearer ' + token,
+          'Authorization-Provider': 'husqvarna',
         },
         json: true // Automatically parses the JSON string in the response
       };
