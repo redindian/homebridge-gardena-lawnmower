@@ -38,12 +38,14 @@ MyRobo.prototype = {
       rp(options)
         .then(function (response) {
           const data = response.data;
-          me.log("getToken", data);
+          me.log("getToken", {data});
           const expires = Date.now() + data['attributes']['expires_in'] - 5000;
-          me.token = {
+          token = {
             token: data.id,
             expires: expires
           };
+          me.log("getToken", {token});
+          me.token = token;
           resolve(me.token.token);
         })
         .catch(function (err) {
@@ -65,10 +67,13 @@ MyRobo.prototype = {
     });
   },
   getMowerOnCharacteristic: async function (next) {
+    const me = this;
+
     const mowerId = await this.getMowerId();
     const locationId = this.locationId;
     this.log('getMowerOnCharacteristic', {mowerId, locationId});
     const token = await this.getToken();
+    this.log('getMowerOnCharacteristic', {mowerId, locationId, token});
 
     const options = {
       uri: 'https://smart.gardena.com/sg-1/devices/' + mowerId,
@@ -81,16 +86,22 @@ MyRobo.prototype = {
       json: true // Automatically parses the JSON string in the response
     };
 
-    const response = await rp(options);
-    this.log('getMowerOnCharacteristic', response);
+    rp(options)
+      .then(function (response) {
+        me.log('getMowerOnCharacteristic', response);
 
-    const state = response && response['devices'] ? response['devices']['device_state'] : '';
-    let mowing = 0;
-    if (state === 'ok') {
-      mowing = 0;
-    }
+        const state = response && response['devices'] ? response['devices']['device_state'] : '';
+        let mowing = 0;
+        if (state === 'ok') {
+          mowing = 0;
+        }
 
-    next(null, mowing);
+        next(null, mowing);
+      })
+      .catch(function (err) {
+        me.log("Cannot get mower.", err);
+        next(err);
+      });
   },
   sendMowerCommand: async function (command, parameters) {
     const me = this;
