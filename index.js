@@ -1,71 +1,76 @@
 var Service, Characteristic;
-const request = require('request');
 const rp = require('request-promise-native');
-const url = require('url');
 
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  homebridge.registerAccessory("homebridge-gardena", "HomebridgeGardena", myRobo);
+  homebridge.registerAccessory("homebridge-gardena", "HomebridgeGardena", MyRobo);
 };
 
-function myRobo(log, config) {
+function MyRobo(log, config) {
   this.log = log;
   this.username = config['username'];
   this.password = config['password'];
-  this.locationid = config['locationid'];
-  this.mowerId = config['mowerId'] ;
+  this.locationId = config['location-id'];
+  this.mowerId = config['mower-id'];
 
   this.manufactInfo = config['mower'];
   this.modelInfo = config['model'];
   this.serialNumberInfo = config['serial-number'];
 }
 
-myRobo.prototype = {
+MyRobo.prototype = {
   getToken: function () {
+    const me = this;
     return new Promise((resolve, reject) => {
-      if (this.token && this.token.expires && this.token.expires > Date.now()) {
-        resolve(this.token.token);
-      } else { }
-      var options = {
+      let token = me.token;
+      if (token && token.expires && token.expires > Date.now()) {
+        resolve(me.token.token);
+      }
+      const options = {
         method: 'POST',
         uri: 'https://iam-api.dss.husqvarnagroup.net/api/v3/token',
-        body: { data: { type: 'token', attributes: { username: this.username, password: this.password } } },
+        body: {data: {type: 'token', attributes: {username: this.username, password: this.password}}},
         json: true // Automatically stringifies the body to JSON
       };
 
       rp(options)
         .then(function (response) {
-          const token = {
-            token: response.data.id
+          const data = response.data;
+          const expires = Date.now() + data['attributes']['expires_in'] - 5000;
+          me.token = {
+            token: data.id,
+            expires: expires
           };
-          token.expires = Date.now() + response.data.attributes.expires_in - 5000;
-
-          this.token = token;
-          resolve(this.token.token);
+          resolve(me.token.token);
         })
         .catch(function (err) {
-          console.log("Cannot get Token.");
+          me.log("Cannot get Token.", err);
           reject(err);
         });
     });
   },
-  getMoverId: function () {
+  getMowerId: function () {
+    const me = this;
     return new Promise((resolve, reject) => {
-      resolve(this.moverId); // FIXME
+      if (me.mowerId) {
+        resolve(me.mowerId);
+      } else {
+        const err = "Please set Mover ID in config.";
+        me.log("Cannot get Mower ID", err);
+        reject(err);
+      }
     });
   },
-  getMowerOnCharacteristic: function (next) {
-    const me = this;
-
-    const mowerId = this.getMoverId();
-    const locationId = this.locationid;
-    const token = this.getToken();
+  getMowerOnCharacteristic: async function (next) {
+    const mowerId = await this.getMowerId();
+    const locationId = await this.locationId;
+    const token = await this.getToken();
 
     const options = {
       uri: 'https://smart.gardena.com/sg-1/devices/' + mowerId,
       qs: {
-        locationId: locationId
+        locationid: locationId
       },
       headers: {
         'Authorization': 'Bearer ' + token
@@ -73,25 +78,25 @@ myRobo.prototype = {
       json: true // Automatically parses the JSON string in the response
     };
 
-    const response =  rp(options);
-    const state = response.devices.device_state;
-    var mowing = 0;
+    const response = await rp(options);
+    this.log('getMowerOnCharacteristic', response);
+
+    const state = response && response['devices'] ? response['devices']['device_state'] : '';
+    let mowing = 0;
     if (state === 'ok') {
       mowing = 0;
     }
-    // WHAT IS MOWING
 
     next(null, mowing);
-
   },
-  sendMowerCommand(command, parameters) {
+  sendMowerCommand: async function (command, parameters) {
+    const me = this;
+
+    const mowerId = await this.getMowerId();
+    const locationId = await this.locationId;
+    const token = await this.getToken();
+
     return new Promise((resolve, reject) => {
-      const me = this;
-
-      const mowerId =  this.getMoverId();
-      const locationId =  this.locationid;
-      const token =  this.getToken();
-
       const body = {
         name: command
       };
@@ -103,35 +108,39 @@ myRobo.prototype = {
         uri: 'https://smart.gardena.com/sg-1/devices/' + mowerId + '/mower/command',
         body: body,
         qs: {
-          locationId: locationId
+          locationid: locationId
         },
         headers: {
           'Authorization': 'Bearer ' + token
         },
         json: true // Automatically parses the JSON string in the response
       };
+
+      rp(options)
+        .then(function (response) {
+          this.log('sendMowerCommand', response);
+          resolve(response);
+        })
+        .catch(function (err) {
+          me.log("Cannot send command.", err);
+          reject(err);
+        });
     });
   },
 
   setMowerOnCharacteristic: function (on, next) {
-
     if (on) {
       this.sendMowerCommand('start_override_timer', {
         duration: 60
-      }).then((value) => next()).catch(next);
-
+      }).then(() => next()).catch(next);
     } else {
       this.sendMowerCommand('park_until_next_timer')
-        .then((value) => next()).catch(next);
+        .then(() => next()).catch(next);
     }
   },
 
-
-
   getServices: function () {
-
     this.services = [];
-
 
     /* Information Service */
 
@@ -143,35 +152,41 @@ myRobo.prototype = {
     this.services.push(informationService);
 
     /* Battery Service */
-/*
-    let batteryService = new Service.BatteryService();
-    batteryService
-      .getCharacteristic(Characteristic.BatteryLevel)
-      .on('get', this.getBatteryLevelCharacteristic.bind(this));
-    batteryService
-      .getCharacteristic(Characteristic.ChargingState)
-      .on('get', this.getChargingStateCharacteristic.bind(this));
-    batteryService
-      .getCharacteristic(Characteristic.StatusLowBattery)
-      .on('get', this.getLowBatteryCharacteristic.bind(this));
-    this.services.push(batteryService);
-*/
+
+    /*
+        let batteryService = new Service.BatteryService();
+        batteryService
+          .getCharacteristic(Characteristic.BatteryLevel)
+          .on('get', this.getBatteryLevelCharacteristic.bind(this));
+        batteryService
+          .getCharacteristic(Characteristic.ChargingState)
+          .on('get', this.getChargingStateCharacteristic.bind(this));
+        batteryService
+          .getCharacteristic(Characteristic.StatusLowBattery)
+          .on('get', this.getLowBatteryCharacteristic.bind(this));
+        this.services.push(batteryService);
+    */
+
     /* Humidity Service */
-/*
-    let humidityService = new Service.HumiditySensor("Battery level");
-    humidityService
-      .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-      .on('get', this.getBatteryLevelCharacteristic.bind(this));
-    this.services.push(humidityService);
-*/
+
+    /*
+        let humidityService = new Service.HumiditySensor("Battery level");
+        humidityService
+          .getCharacteristic(Characteristic.CurrentRelativeHumidity)
+          .on('get', this.getBatteryLevelCharacteristic.bind(this));
+        this.services.push(humidityService);
+    */
+
     /* Switch Service */
 
+    /*
     let switchService = new Service.Switch("Auto/Home");
     switchService
       .getCharacteristic(Characteristic.On)
       .on('get', this.getSwitchOnCharacteristic.bind(this))
       .on('set', this.setSwitchOnCharacteristic.bind(this));
-    //this.services.push(switchService);
+    this.services.push(switchService);
+    */
 
     /* Fan Service */
 
@@ -181,7 +196,6 @@ myRobo.prototype = {
       .on('get', this.getMowerOnCharacteristic.bind(this))
       .on('set', this.setMowerOnCharacteristic.bind(this));
     this.services.push(fanService);
-
 
     /* If Robonect HX - fetch temp from temp sensor. Otherwise, fetch battery temp. */
     /*
@@ -201,21 +215,24 @@ myRobo.prototype = {
           this.tempService = tempService;
         }
     */
+
     this.informationService = informationService;
-  /*  this.batteryService = batteryService;
-    this.humidityService = humidityService;*/
+    /*
+    this.batteryService = batteryService;
+    this.humidityService = humidityService;
     this.switchService = switchService;
+     */
     this.fanService = fanService;
 
     return this.services;
-
   },
+  /*
   getBatteryLevelCharacteristic: function (next) {
     const me = this;
     request({
-      url: me.statusUrl,
-      method: 'GET',
-    },
+        url: me.statusUrl,
+        method: 'GET',
+      },
       function (error, response, body) {
         if (error) {
           me.log(error.message);
@@ -225,12 +242,13 @@ myRobo.prototype = {
         return next(null, obj.status.battery);
       });
   },
+
   getChargingStateCharacteristic: function (next) {
     const me = this;
     request({
-      url: me.statusUrl,
-      method: 'GET',
-    },
+        url: me.statusUrl,
+        method: 'GET',
+      },
       function (error, response, body) {
         var chargingStatus = 0;
         if (error) {
@@ -244,12 +262,13 @@ myRobo.prototype = {
         return next(null, chargingStatus);
       });
   },
+
   getLowBatteryCharacteristic: function (next) {
     const me = this;
     request({
-      url: me.statusUrl,
-      method: 'GET',
-    },
+        url: me.statusUrl,
+        method: 'GET',
+      },
       function (error, response, body) {
         if (error) {
           me.log(error.message);
@@ -264,13 +283,14 @@ myRobo.prototype = {
 
       });
   },
+
   getSwitchOnCharacteristic: function (next) {
     const me = this;
     var onn = false;
     request({
-      url: me.statusUrl,
-      method: 'GET',
-    },
+        url: me.statusUrl,
+        method: 'GET',
+      },
       function (error, response, body) {
         if (error) {
           me.log(error.message);
@@ -283,6 +303,7 @@ myRobo.prototype = {
         return next(null, onn);
       });
   },
+
   setSwitchOnCharacteristic: function (on, next) {
     const me = this;
     if (on) {
@@ -291,9 +312,9 @@ myRobo.prototype = {
       me.setModeUrl = me.setHomeModeUrl;
     }
     request({
-      url: me.setModeUrl,
-      method: 'GET',
-    },
+        url: me.setModeUrl,
+        method: 'GET',
+      },
       function (error, response) {
         if (error) {
           me.log(error.message);
@@ -302,7 +323,7 @@ myRobo.prototype = {
         return next();
       });
   },
-  /*
+
   getMowerOnCharacteristic: function (next) {
     const me = this;
     var mowing = 0;
@@ -322,7 +343,7 @@ myRobo.prototype = {
         return next(null, mowing);
       });
   },
-  
+
   setMowerOnCharacteristic: function (on, next) {
     const me = this;
     if (on) {
@@ -342,14 +363,14 @@ myRobo.prototype = {
         return next();
       });
   },
-  */
+
   getTemperatureCharacteristic: function (next) {
     const me = this;
     var temperature = 0;
     request({
-      url: me.tempUrl,
-      method: 'GET',
-    },
+        url: me.tempUrl,
+        method: 'GET',
+      },
       function (error, response, body) {
         if (error) {
           me.log(error.message);
@@ -364,9 +385,9 @@ myRobo.prototype = {
     const me = this;
     var temperature = 0;
     request({
-      url: me.batteryUrl,
-      method: 'GET',
-    },
+        url: me.batteryUrl,
+        method: 'GET',
+      },
       function (error, response, body) {
         if (error) {
           me.log(error.message);
@@ -378,4 +399,5 @@ myRobo.prototype = {
         return next(null, temperature);
       });
   }
+   */
 };
