@@ -21,7 +21,6 @@
   ],
   "dependencies": {
     "homebridge": ">=0.2.0",
-    "request": "^2.65.0",
     "request-promise-native": "^1.0.5"
   },
   "devDependencies": {},

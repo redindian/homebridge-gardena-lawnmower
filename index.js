@@ -122,7 +122,7 @@ MyRobo.prototype = {
       }
       const options = {
         method: 'POST',
-        uri: API_URI + 'devices/' + mowerId + '/mower/command',
+        uri: API_URI + 'devices/' + mowerId + '/abilities/mower/command',
         body: body,
         qs: {
           locationId: locationId
@@ -150,10 +150,12 @@ MyRobo.prototype = {
     this.log('setMowerOnCharacteristic', {on});
 
     if (on) {
+      // start_override_timer, start_resume_schedule
       this.sendMowerCommand('start_override_timer', {
         duration: 60
       }).then(() => next()).catch(next);
     } else {
+      // park_until_next_timer, park_until_further_notice
       this.sendMowerCommand('park_until_next_timer')
         .then(() => next()).catch(next);
     }
