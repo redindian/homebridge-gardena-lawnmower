@@ -263,13 +263,13 @@ MyRobo.prototype = {
     this.services.push(batteryService);
 
     /* Humidity Service */
-
-    let humidityService = new Service.HumiditySensor("Battery level");
+/*
+    let humidityService = new Service.HumiditySensor("Battery");
     humidityService
       .getCharacteristic(Characteristic.CurrentRelativeHumidity)
       .on('get', this.getBatteryLevelCharacteristic.bind(this));
     this.services.push(humidityService);
-
+*/
     /* Switch Service */
 
     /*
