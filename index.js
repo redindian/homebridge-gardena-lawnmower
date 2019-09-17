@@ -1,6 +1,7 @@
 const API_URI = 'https://smart.gardena.com/v1/';
 
 const rp = require('request-promise-native');
+const jq = require('json-query');
 
 let Service, Characteristic;
 
@@ -68,43 +69,77 @@ MyRobo.prototype = {
       }
     });
   },
-  getMowerOnCharacteristic: async function (next) {
+  getDevicesMowerId: async function () {
+    const query = 'devices[category=mower].id';
+    const mowerId = await this.queryDevices(query);
+    this.log('getDevicesMowerId', {mowerId});
+    return mowerId;
+  },
+  getDevicesMowerProperties: async function () {
+    const query = 'devices[category=mower].abilities[type=robotic_mower][properties]';
+    const properties = await this.queryDevices(query);
+    this.log('getDevicesMowerProperties', {properties});
+    return properties;
+  },
+  getDevicesMowerStatus: async function () {
+    const query = 'devices[category=mower].abilities[type=robotic_mower][properties][name=status].value';
+    const status = await this.queryDevices(query);
+    this.log('getDevicesMowerStatus', {status});
+    return status;
+  },
+  queryDevices: async function (query) {
+    const data = await this.getDevices();
+    const result = jq(query, {data});
+    this.log('queryDevices', {query, result});
+    return result;
+  },
+  getDevices: async function () {
+    const data = await this.callApi(
+      'GET',
+      API_URI + 'devices'
+    );
+    this.log('getDevices', {data});
+  },
+  callApi: async function (method, uri, qs, body) {
     const me = this;
-
-    const mowerId = await this.getMowerId();
     const locationId = this.locationId;
     const token = await this.getToken();
 
-    this.log('getMowerOnCharacteristic', {mowerId, locationId, token});
-
-    const options = {
-      uri: API_URI + 'devices/' + mowerId,
-      qs: {
+    return new Promise((resolve, reject) => {
+      qs = qs || {
         locationId: locationId
-      },
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Authorization-Provider': 'husqvarna',
-      },
-      json: true // Automatically parses the JSON string in the response
-    };
+      };
+      const options = {
+        method: method,
+        uri: uri,
+        qs: qs,
+        body: body,
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Authorization-Provider': 'husqvarna',
+        },
+        json: true // Automatically parses the JSON string in the response
+      };
 
-    rp(options)
-      .then(function (response) {
-        me.log('getMowerOnCharacteristic', response);
+      rp(options)
+        .then(function (response) {
+          resolve(response);
+        })
+        .catch(function (err) {
+          me.log("Cannot call API.", {options}, err.statusCode, err.statusMessage);
+          reject(err);
+        });
 
-        const state = response && response['devices'] ? response['devices']['device_state'] : 'ok';
-        let mowing = 1;
-        if (state === 'ok') {
-          mowing = 0;
-        }
-
-        next(null, mowing);
-      })
-      .catch(function (err) {
-        me.log("Cannot get mower status.", {options}, err.statusCode, err.statusMessage);
-        next(err);
-      });
+    });
+  },
+  getMowerOnCharacteristic: async function (next) {
+    const status = await this.getDevicesMowerStatus();
+    const mowing = this.isMowingStatus(status) ? 1 : 0;
+    this.log('getMowerOnCharacteristic', {status, mowing});
+    next(null, mowing);
+  },
+  isMowingStatus: function (status) {
+    return ['ok_cutting', 'ok_cutting_timer_overridden'].includes(status);
   },
   sendMowerCommand: async function (command, parameters) {
     const me = this;
@@ -152,7 +187,7 @@ MyRobo.prototype = {
     if (on) {
       // start_override_timer, start_resume_schedule
       this.sendMowerCommand('start_override_timer', {
-        duration: 60
+        duration: 180
       }).then(() => next()).catch(next);
     } else {
       // park_until_next_timer, park_until_further_notice
