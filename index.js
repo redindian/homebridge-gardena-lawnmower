@@ -99,6 +99,7 @@ MyRobo.prototype = {
       API_URI + 'devices'
     );
     this.log('getDevices', {data});
+    return data;
   },
   callApi: async function (method, uri, qs, body) {
     const me = this;
