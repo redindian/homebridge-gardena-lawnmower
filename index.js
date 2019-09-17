@@ -90,7 +90,7 @@ MyRobo.prototype = {
   queryDevices: async function (query) {
     const data = await this.getDevices();
     const result = jq(query, {data});
-    this.log('queryDevices', {query, result});
+    this.log('queryDevices', {data, query, result});
     return result;
   },
   getDevices: async function () {
