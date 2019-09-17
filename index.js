@@ -24,6 +24,7 @@ function MyRobo(log, config) {
 }
 
 MyRobo.prototype = {
+
   getToken: function () {
     const me = this;
     return new Promise((resolve, reject) => {
@@ -57,6 +58,7 @@ MyRobo.prototype = {
         });
     });
   },
+
   getMowerId: function () {
     const me = this;
     return new Promise((resolve, reject) => {
@@ -69,36 +71,53 @@ MyRobo.prototype = {
       }
     });
   },
+
   getDevicesMowerId: async function () {
     const query = 'devices[category=mower].id';
     const mowerId = await this.queryDevices(query);
     this.log('getDevicesMowerId', {mowerId});
     return mowerId;
   },
+
   getDevicesMowerProperties: async function () {
     const query = 'devices[category=mower].abilities[type=robotic_mower][properties]';
-    const properties = await this.queryDevices(query);
-    this.log('getDevicesMowerProperties', {properties});
-    return properties;
+    return await this.queryDevices(query);
   },
+
   getDevicesMowerStatus: async function () {
     const query = 'devices[category=mower].abilities[type=robotic_mower][properties][name=status].value';
-    const status = await this.queryDevices(query);
-    this.log('getDevicesMowerStatus', {status});
-    return status;
+    return await this.queryDevices(query);
   },
+
+  getDevicesBatteryProperties: async function () {
+    const query = 'devices[category=mower].abilities[type=battery_power].properties[name=level].value';
+    return await this.queryDevices(query);
+  },
+
+  getDevicesBatteryLevel: async function () {
+    const query = 'devices[category=mower].abilities[type=battery_power].properties[name=level].value';
+    return await this.queryDevices(query);
+  },
+
+  getDevicesBatteryCharging: async function () {
+    const query = 'devices[category=mower].abilities[type=battery_power].properties[name=charging].value';
+    return await this.queryDevices(query);
+  },
+
   queryDevices: async function (query) {
     const data = await this.getDevices();
     const result = jq(query, {data});
     this.log('queryDevices', {data, query, result});
     return result ? result.value : null;
   },
+
   getDevices: async function () {
     return await this.callApi(
       'GET',
       API_URI + 'devices'
     );
   },
+
   callApi: async function (method, uri, qs, body) {
     const me = this;
     const locationId = this.locationId;
@@ -131,15 +150,37 @@ MyRobo.prototype = {
 
     });
   },
+
   getMowerOnCharacteristic: async function (next) {
     const status = await this.getDevicesMowerStatus();
     const mowing = this.isMowingStatus(status) ? 1 : 0;
     this.log('getMowerOnCharacteristic', {status, mowing});
     next(null, mowing);
   },
+
   isMowingStatus: function (status) {
     return ['ok_cutting', 'ok_cutting_timer_overridden'].includes(status);
   },
+
+  getBatteryLevelCharacteristic: async function (next) {
+    const value = await this.getDevicesBatteryLevel();
+    this.log('getBatteryLevelCharacteristic', {value});
+    next(null, value);
+  },
+
+  getChargingStateCharacteristic: async function (next) {
+    const value = await this.getDevicesBatteryCharging();
+    this.log('getChargingStateCharacteristic', {value});
+    next(null, value);
+  },
+
+  getLowBatteryCharacteristic: async function (next) {
+    const value = await this.getDevicesBatteryLevel();
+    const low = value < 20;
+    this.log('getLowBatteryCharacteristic', {value, low});
+    next(null, low);
+  },
+
   sendMowerCommand: async function (command, parameters) {
     const me = this;
 
@@ -209,29 +250,25 @@ MyRobo.prototype = {
 
     /* Battery Service */
 
-    /*
-        let batteryService = new Service.BatteryService();
-        batteryService
-          .getCharacteristic(Characteristic.BatteryLevel)
-          .on('get', this.getBatteryLevelCharacteristic.bind(this));
-        batteryService
-          .getCharacteristic(Characteristic.ChargingState)
-          .on('get', this.getChargingStateCharacteristic.bind(this));
-        batteryService
-          .getCharacteristic(Characteristic.StatusLowBattery)
-          .on('get', this.getLowBatteryCharacteristic.bind(this));
-        this.services.push(batteryService);
-    */
+    let batteryService = new Service.BatteryService();
+    batteryService
+      .getCharacteristic(Characteristic.BatteryLevel)
+      .on('get', this.getBatteryLevelCharacteristic.bind(this));
+    batteryService
+      .getCharacteristic(Characteristic.ChargingState)
+      .on('get', this.getChargingStateCharacteristic.bind(this));
+    batteryService
+      .getCharacteristic(Characteristic.StatusLowBattery)
+      .on('get', this.getLowBatteryCharacteristic.bind(this));
+    this.services.push(batteryService);
 
     /* Humidity Service */
 
-    /*
-        let humidityService = new Service.HumiditySensor("Battery level");
-        humidityService
-          .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-          .on('get', this.getBatteryLevelCharacteristic.bind(this));
-        this.services.push(humidityService);
-    */
+    let humidityService = new Service.HumiditySensor("Battery level");
+    humidityService
+      .getCharacteristic(Characteristic.CurrentRelativeHumidity)
+      .on('get', this.getBatteryLevelCharacteristic.bind(this));
+    this.services.push(humidityService);
 
     /* Switch Service */
 
