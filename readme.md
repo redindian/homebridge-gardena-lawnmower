@@ -7,7 +7,7 @@ Which is based upon the great [Homebridge Plugin for Robonect](https://www.npmjs
 
 ## Usage
 
-`npm install -g homebridge-lawnmower`
+`npm install -g homebridge-gardena-lawnmower`
 
 Config as below:  
 ``` json
