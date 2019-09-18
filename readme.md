@@ -19,6 +19,6 @@ Config as below:
 	"username": "Gardena Username",
 	"password": "Gardena Password",
 	"location-id": "yourlocationId",
-	"mover-id":"yourmowerid"
+	"mower-id":"yourmowerid"
 }  
 ```
