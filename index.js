@@ -19,8 +19,8 @@ function MyRobo(log, config) {
   this.modelInfo = config['model'];
   this.serialNumberInfo = config['serial'];
 
-  this.user_id = this.getUserId();
-  this.locationId = null;
+  this.user_id = null;  // this.getUserId()
+  this.locationId = this.getLocationsLocationId();
 }
 
 MyRobo.prototype = {
@@ -30,11 +30,8 @@ MyRobo.prototype = {
 
     return new Promise((resolve, reject) => {
       let token = me.token;
-      me.log('getToken', 'try token: ' + JSON.stringify(token));
       if (token && token.expires && token.expires > Date.now()) {
-        me.log('getToken', 'use token');
-        resolve(me.token);
-        return;
+        return resolve(me.token);
       }
 
       const options = {
@@ -70,7 +67,7 @@ MyRobo.prototype = {
           resolve(me.token);
         })
         .catch(function (err) {
-          me.log('Cannot get Token.', {options}, err.statusCode, err.statusMessage);
+          me.log('Cannot get Token', {options}, err.statusCode, err.statusMessage);
           reject(err);
         });
     });
@@ -103,7 +100,7 @@ MyRobo.prototype = {
   queryLocations: async function (query) {
     const data = await this.getLocations();
     const result = jq(query, {data});
-    this.log('queryLocations', {data, query, result});
+    // this.log('queryLocations', {data, query, result});
     return result ? result.value : null;
   },
 
