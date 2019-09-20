@@ -76,7 +76,7 @@ MyRobo.prototype = {
   getUserId: async function () {
     if (!this.user_id) {
       this.log('getUserId', 'get user_id');
-      const token = this.getToken();
+      const token = await this.getToken();
       const user_id = token.user_id;
       this.user_id = user_id;
       this.log('getUserId', {user_id});
