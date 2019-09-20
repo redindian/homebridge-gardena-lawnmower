@@ -21,7 +21,6 @@ function MyRobo(log, config) {
 
   this.user_id = null;
   this.locationId = null;
-  this.busy = false;
 }
 
 MyRobo.prototype = {
