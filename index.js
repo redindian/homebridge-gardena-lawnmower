@@ -19,7 +19,7 @@ function MyRobo(log, config) {
   this.modelInfo = config['model'];
   this.serialNumberInfo = config['serial'];
 
-  this.user_id = null;
+  this.user_id = this.getUserId();
   this.locationId = null;
 }
 
