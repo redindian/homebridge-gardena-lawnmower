@@ -30,8 +30,11 @@ MyRobo.prototype = {
 
     return new Promise((resolve, reject) => {
       let token = me.token;
+      me.log('getToken', 'try token.expires: ' + (token ? token.expires : 'null'));
       if (token && token.expires && token.expires > Date.now()) {
-        return resolve(me.token);
+        me.log('getToken', 'use token');
+        resolve(me.token);
+        return;
       }
 
       const options = {
