@@ -14,11 +14,9 @@ Config as below:
 {  
 	"accessory": "HomebridgeGardena",  
 	"name": "name-of-your-mower",  
-	"mower": "Mower make",  
+	"manufacturer": "Mower Manufacturer",  
 	"model": "Mower Model",  
 	"username": "Gardena Username",
-	"password": "Gardena Password",
-	"locationid": "yourlocationId",
-	"moverid":"yourmowerid"
+	"password": "Gardena Password"
 }  
 ```

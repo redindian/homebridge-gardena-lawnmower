@@ -15,12 +15,12 @@ function MyRobo(log, config) {
   this.log = log;
   this.username = config['username'];
   this.password = config['password'];
-  this.locationId = config['location-id'];
-  this.mowerId = config['mower-id'];
-
-  this.manufactInfo = config['mower'];
+  this.manufactInfo = config['manufacturer'];
   this.modelInfo = config['model'];
-  this.serialNumberInfo = config['serial-number'];
+  this.serialNumberInfo = config['serial'];
+
+  this.user_id = null;
+  this.locationId = null;
 }
 
 MyRobo.prototype = {
@@ -30,7 +30,7 @@ MyRobo.prototype = {
     return new Promise((resolve, reject) => {
       let token = me.token;
       if (token && token.expires && token.expires > Date.now()) {
-        resolve(me.token.token);
+        resolve(me.token);
       }
       const options = {
         method: 'POST',
@@ -42,13 +42,22 @@ MyRobo.prototype = {
       rp(options)
         .then(function (response) {
           const data = response.data;
-          me.log("getToken", {data});
-          const expires = Date.now() + data['attributes']['expires_in'] - 5000;
+          me.log("getToken", "Successful login");
+
+          // Handle attributes
+          const attributes = data['attributes'];
+          const expires = Date.now() + attributes['expires_in'] - 5000;
+          const provider = attributes['provider'];
+          me.user_id = attributes['user_id'];
+          me.locationId = null;
+
+          // Set token
           token = {
             token: data.id,
-            expires: expires
+            expires: expires,
+            provider: provider
           };
-          me.log("getToken", {token});
+
           me.token = token;
           resolve(me.token.token);
         })
@@ -59,17 +68,35 @@ MyRobo.prototype = {
     });
   },
 
-  getMowerId: function () {
-    const me = this;
-    return new Promise((resolve, reject) => {
-      if (me.mowerId) {
-        resolve(me.mowerId);
-      } else {
-        const err = "Please set Mower ID (mower-id) in config.";
-        me.log("Cannot get Mower ID", err);
-        reject(err);
+  getLocationsLocationId: async function () {
+    if (this.locationId === null) {
+      const query = 'locations[0].id';
+      const locationId = await this.queryLocations(query);
+      this.log('getLocationsLocationId', {locationId});
+      this.locationId = locationId;
+    }
+    return this.locationId;
+  },
+
+  queryLocations: async function (query) {
+    const data = await this.getLocations();
+    const result = jq(query, {data});
+    // this.log('queryLocations', {data, query, result});
+    return result ? result.value : null;
+  },
+
+  getLocations: async function () {
+    // Await token for user_id
+    await this.getToken();
+
+    return await this.callApi(
+      'GET',
+      API_URI + 'locations',
+      {
+        locationId: null,
+        user_id: this.user_id,
       }
-    });
+    );
   },
 
   getDevicesMowerId: async function () {
@@ -120,8 +147,8 @@ MyRobo.prototype = {
 
   callApi: async function (method, uri, qs, body) {
     const me = this;
-    const locationId = this.locationId;
     const token = await this.getToken();
+    const locationId = this.getLocationsLocationId();
 
     return new Promise((resolve, reject) => {
       qs = qs || {
@@ -133,8 +160,8 @@ MyRobo.prototype = {
         qs: qs,
         body: body,
         headers: {
-          'Authorization': 'Bearer ' + token,
-          'Authorization-Provider': 'husqvarna',
+          'Authorization': 'Bearer ' + token.token,
+          'Authorization-Provider': token.provider,
         },
         json: true // Automatically parses the JSON string in the response
       };
@@ -184,9 +211,9 @@ MyRobo.prototype = {
   sendMowerCommand: async function (command, parameters) {
     const me = this;
 
-    const mowerId = await this.getMowerId();
-    const locationId = this.locationId;
     const token = await this.getToken();
+    const locationId = this.getLocationsLocationId();
+    const mowerId = await this.getDevicesMowerId();
 
     return new Promise((resolve, reject) => {
       const body = {
@@ -203,8 +230,8 @@ MyRobo.prototype = {
           locationId: locationId
         },
         headers: {
-          'Authorization': 'Bearer ' + token,
-          'Authorization-Provider': 'husqvarna',
+          'Authorization': 'Bearer ' + token.token,
+          'Authorization-Provider': token.provider,
         },
         json: true // Automatically parses the JSON string in the response
       };
