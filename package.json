@@ -28,10 +28,10 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/redindian/homebridge-lawnmower.git"
+    "url": "git+https://github.com/redindian/homebridge-gardena-lawnmower.git"
   },
   "bugs": {
-    "url": "https://github.com/redindian/homebridge-lawnmower/issues"
+    "url": "https://github.com/redindian/homebridge-gardena-lawnmower/issues"
   },
-  "homepage": "https://github.com/redindian/homebridge-lawnmower#readme"
+  "homepage": "https://github.com/redindian/homebridge-gardena-lawnmower#readme"
 }
