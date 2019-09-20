@@ -28,18 +28,21 @@ MyRobo.prototype = {
 
   getToken: function () {
     const me = this;
+
+    // Only one token call
+    if (this.busy) {
+      this.log("getToken", "busy");
+      return;
+    }
+
+    this.busy = true;
+
+
     return new Promise((resolve, reject) => {
       let token = me.token;
       if (token && token.expires && token.expires > Date.now()) {
         resolve(me.token);
       }
-
-      // Only one token call
-      if (me.busy) {
-        return;
-      }
-
-      me.busy = true;
 
       const options = {
         method: 'POST',
