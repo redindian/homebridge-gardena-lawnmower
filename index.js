@@ -19,7 +19,9 @@ function MyRobo(log, config) {
   this.modelInfo = config['model'];
   this.serialNumberInfo = config['serial'];
 
+  this.user_id = null;
   this.locationId = null;
+  this.busy = false;
 }
 
 MyRobo.prototype = {
@@ -31,6 +33,14 @@ MyRobo.prototype = {
       if (token && token.expires && token.expires > Date.now()) {
         resolve(me.token);
       }
+
+      // Only one token call
+      if (me.busy) {
+        return;
+      }
+
+      me.busy = true;
+
       const options = {
         method: 'POST',
         uri: API_URI + 'auth/token',
@@ -40,6 +50,8 @@ MyRobo.prototype = {
 
       rp(options)
         .then(function (response) {
+          me.busy = false;
+
           const data = response.data;
           me.log("getToken", "Successful login");
 
@@ -50,6 +62,7 @@ MyRobo.prototype = {
           const user_id = attributes['user_id'];
 
           me.locationId = null;
+          me.user_id = user_id;
 
           // Set token
           token = {
@@ -63,15 +76,28 @@ MyRobo.prototype = {
           resolve(me.token);
         })
         .catch(function (err) {
+          me.busy = false;
           me.log("Cannot get Token.", {options}, err.statusCode, err.statusMessage);
           reject(err);
         });
     });
   },
 
+  getUserId: async function () {
+    if (!this.user_id) {
+      this.log('getUserId', 'get user_id');
+      const token = this.getToken();
+      const user_id = token.user_id;
+      this.user_id = user_id;
+      this.log('getUserId', {user_id});
+    }
+
+    return this.user_id;
+  },
+
   getLocationsLocationId: async function () {
     if (this.locationId === null) {
-      this.log("getLocationsLocationId", "get locationId");
+      this.log('getLocationsLocationId', 'get locationId');
       const query = 'locations[0].id';
       const locationId = await this.queryLocations(query);
       this.log('getLocationsLocationId', {locationId});
@@ -89,9 +115,7 @@ MyRobo.prototype = {
   },
 
   getLocations: async function () {
-    // Await token for user_id
-    const token = await this.getToken();
-    const user_id =  token.user_id;
+    const user_id = await this.getUserId();
 
     return await this.callApi(
       'GET',
@@ -104,10 +128,14 @@ MyRobo.prototype = {
   },
 
   getDevicesMowerId: async function () {
-    const query = 'devices[category=mower].id';
-    const mowerId = await this.queryDevices(query);
-    this.log('getDevicesMowerId', {mowerId});
-    return mowerId;
+    if (!this.mowerId) {
+      this.log('getDevicesMowerId', 'set mowerId');
+      const query = 'devices[category=mower].id';
+      const mowerId = await this.queryDevices(query);
+      this.log('getDevicesMowerId', {mowerId});
+      this.mowerId = mowerId;
+    }
+    return this.mowerId;
   },
 
   // getDevicesMowerProperties: async function () {
@@ -143,18 +171,20 @@ MyRobo.prototype = {
   },
 
   getDevices: async function () {
+    const locationId = this.getLocationsLocationId();
+
     return await this.callApi(
       'GET',
-      API_URI + 'devices'
+      API_URI + 'devices',
+      {
+        locationId: locationId
+      }
     );
   },
 
   callApi: async function (method, uri, qs, body) {
     const me = this;
     const token = await this.getToken();
-    qs = qs || {
-      locationId: this.locationId
-    };
 
     return new Promise((resolve, reject) => {
       const options = {
@@ -214,9 +244,10 @@ MyRobo.prototype = {
   sendMowerCommand: async function (command, parameters) {
     const me = this;
 
-    const token = await this.getToken();
     const locationId = this.getLocationsLocationId();
     const mowerId = await this.getDevicesMowerId();
+    // Token last
+    const token = await this.getToken();
 
     return new Promise((resolve, reject) => {
       const body = {
