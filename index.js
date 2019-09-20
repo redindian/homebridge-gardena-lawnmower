@@ -110,7 +110,7 @@ MyRobo.prototype = {
   queryLocations: async function (query) {
     const data = await this.getLocations();
     const result = jq(query, {data});
-    // this.log('queryLocations', {data, query, result});
+    this.log('queryLocations', {data, query, result});
     return result ? result.value : null;
   },
 
@@ -171,7 +171,7 @@ MyRobo.prototype = {
   },
 
   getDevices: async function () {
-    const locationId = this.getLocationsLocationId();
+    const locationId = await this.getLocationsLocationId();
 
     return await this.callApi(
       'GET',
@@ -244,9 +244,8 @@ MyRobo.prototype = {
   sendMowerCommand: async function (command, parameters) {
     const me = this;
 
-    const locationId = this.getLocationsLocationId();
+    const locationId = await this.getLocationsLocationId();
     const mowerId = await this.getDevicesMowerId();
-    // Token last
     const token = await this.getToken();
 
     return new Promise((resolve, reject) => {
