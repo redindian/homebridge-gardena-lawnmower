@@ -29,15 +29,6 @@ MyRobo.prototype = {
   getToken: function () {
     const me = this;
 
-    // Only one token call
-    if (this.busy) {
-      this.log("getToken", "busy");
-      return;
-    }
-
-    this.busy = true;
-
-
     return new Promise((resolve, reject) => {
       let token = me.token;
       if (token && token.expires && token.expires > Date.now()) {
@@ -53,8 +44,6 @@ MyRobo.prototype = {
 
       rp(options)
         .then(function (response) {
-          me.busy = false;
-
           const data = response.data;
           me.log("getToken", "Successful login");
 
@@ -79,7 +68,6 @@ MyRobo.prototype = {
           resolve(me.token);
         })
         .catch(function (err) {
-          me.busy = false;
           me.log("Cannot get Token.", {options}, err.statusCode, err.statusMessage);
           reject(err);
         });
