@@ -59,7 +59,7 @@ MyRobo.prototype = {
           };
 
           me.token = token;
-          resolve(me.token.token);
+          resolve(me.token);
         })
         .catch(function (err) {
           me.log("Cannot get Token.", {options}, err.statusCode, err.statusMessage);
