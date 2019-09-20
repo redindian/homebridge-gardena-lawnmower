@@ -70,10 +70,12 @@ MyRobo.prototype = {
 
   getLocationsLocationId: async function () {
     if (this.locationId === null) {
+      this.log("getLocationsLocationId", "get locationId");
       const query = 'locations[0].id';
       const locationId = await this.queryLocations(query);
       this.log('getLocationsLocationId', {locationId});
       this.locationId = locationId;
+
     }
     return this.locationId;
   },
@@ -148,12 +150,11 @@ MyRobo.prototype = {
   callApi: async function (method, uri, qs, body) {
     const me = this;
     const token = await this.getToken();
-    const locationId = this.getLocationsLocationId();
+    qs = qs || {
+      locationId: this.locationId
+    };
 
     return new Promise((resolve, reject) => {
-      qs = qs || {
-        locationId: locationId
-      };
       const options = {
         method: method,
         uri: uri,
