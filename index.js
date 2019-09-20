@@ -19,7 +19,6 @@ function MyRobo(log, config) {
   this.modelInfo = config['model'];
   this.serialNumberInfo = config['serial'];
 
-  this.user_id = null;
   this.locationId = null;
 }
 
@@ -48,14 +47,16 @@ MyRobo.prototype = {
           const attributes = data['attributes'];
           const expires = Date.now() + attributes['expires_in'] - 5000;
           const provider = attributes['provider'];
-          me.user_id = attributes['user_id'];
+          const user_id = attributes['user_id'];
+
           me.locationId = null;
 
           // Set token
           token = {
             token: data.id,
             expires: expires,
-            provider: provider
+            provider: provider,
+            user_id: user_id,
           };
 
           me.token = token;
@@ -89,14 +90,15 @@ MyRobo.prototype = {
 
   getLocations: async function () {
     // Await token for user_id
-    await this.getToken();
+    const token = await this.getToken();
+    const user_id =  token.user_id;
 
     return await this.callApi(
       'GET',
       API_URI + 'locations',
       {
         locationId: null,
-        user_id: this.user_id,
+        user_id: user_id,
       }
     );
   },
