@@ -30,6 +30,7 @@ MyRobo.prototype = {
 
     return new Promise((resolve, reject) => {
       let token = me.token;
+      me.log('getToken', 'try token: ' + JSON.stringify(token));
       if (token && token.expires && token.expires > Date.now()) {
         resolve(me.token);
       }
@@ -44,7 +45,7 @@ MyRobo.prototype = {
       rp(options)
         .then(function (response) {
           const data = response.data;
-          me.log("getToken", "Successful login");
+          me.log('getToken', 'Successful login');
 
           // Handle attributes
           const attributes = data['attributes'];
@@ -67,7 +68,7 @@ MyRobo.prototype = {
           resolve(me.token);
         })
         .catch(function (err) {
-          me.log("Cannot get Token.", {options}, err.statusCode, err.statusMessage);
+          me.log('Cannot get Token.', {options}, err.statusCode, err.statusMessage);
           reject(err);
         });
     });
@@ -194,7 +195,7 @@ MyRobo.prototype = {
           resolve(response);
         })
         .catch(function (err) {
-          me.log("Cannot call API.", {options}, err.statusCode, err.statusMessage);
+          me.log('Cannot call API.', {options}, err.statusCode, err.statusMessage);
           reject(err);
         });
 
@@ -265,7 +266,7 @@ MyRobo.prototype = {
           resolve(response);
         })
         .catch(function (err) {
-          me.log("Cannot send command.", {options}, err.statusCode, err.statusMessage);
+          me.log('Cannot send command.', {options}, err.statusCode, err.statusMessage);
           reject(err);
         });
     });
@@ -314,7 +315,7 @@ MyRobo.prototype = {
 
     /* Humidity Service */
     /*
-        let humidityService = new Service.HumiditySensor("Battery");
+        let humidityService = new Service.HumiditySensor('Battery');
         humidityService
           .getCharacteristic(Characteristic.CurrentRelativeHumidity)
           .on('get', this.getBatteryLevelCharacteristic.bind(this));
@@ -323,7 +324,7 @@ MyRobo.prototype = {
     /* Switch Service */
 
     /*
-    let switchService = new Service.Switch("Auto/Home");
+    let switchService = new Service.Switch('Auto/Home');
     switchService
       .getCharacteristic(Characteristic.On)
       .on('get', this.getSwitchOnCharacteristic.bind(this))
@@ -333,7 +334,7 @@ MyRobo.prototype = {
 
     /* Fan Service */
 
-    let fanService = new Service.Fan("Mowing");
+    let fanService = new Service.Fan('Mowing');
     fanService
       .getCharacteristic(Characteristic.On)
       .on('get', this.getMowerOnCharacteristic.bind(this))
