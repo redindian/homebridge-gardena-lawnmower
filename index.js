@@ -8,7 +8,7 @@ let Service, Characteristic;
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  homebridge.registerAccessory("homebridge-gardena-lawnmower", "HomebridgeGardena", MyRobo);
+  homebridge.registerAccessory("homebridge-gardena-mower", "HomebridgeGardena", MyRobo);
 };
 
 function MyRobo(log, config) {
