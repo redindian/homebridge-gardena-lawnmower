@@ -283,7 +283,7 @@ MyRobo.prototype = {
     if (on) {
       // start_override_timer, start_resume_schedule
       this.sendMowerCommand('start_override_timer', {
-        duration: 180
+        duration: 10800
       }).then(() => next()).catch(next);
     } else {
       // park_until_next_timer, park_until_further_notice
