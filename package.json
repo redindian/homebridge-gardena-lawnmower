@@ -1,7 +1,7 @@
 {
-  "name": "homebridge-gardena-mower",
-  "version": "0.1.3",
-  "author": "neuhausf",
+ "name": "homebridge-gardena-lawnmower",
+  "version": "0.0.6",
+  "author": "Red Indian",
   "description": "Enables homekit support for smart system enabled Gardena lawnmowers.",
   "main": "index.js",
   "scripts": {
