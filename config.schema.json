@@ -1,9 +1,9 @@
 {
-  "pluginAlias": "gardena-mower",
+  "pluginAlias": "gardena-lawnmower",
   "pluginType": "accessory",
   "singular": true,
   "headerDisplay": "Homebridge plugin for smart system enabled Gardena lawnmowers",
-  "footerDisplay": "For a detailed description, see the [README](https://github.com/neuhausf/homebridge-gardena-mower#readme) file.",
+  "footerDisplay": "For a detailed description, see the [README](https://github.com/redindian/homebridge-gardena-lawnmower#readme) file.",
   "schema": {
     "type": "object",
     "properties": {
