@@ -2,7 +2,7 @@
   "name": "homebridge-gardena-mower",
   "version": "0.1.0",
   "author": "neuhausf",
-  "description": "Gets about lawnmowers from the gardena cloud.",
+  "description": "Enables homekit support for smart system enabled Gardena lawnmowers.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

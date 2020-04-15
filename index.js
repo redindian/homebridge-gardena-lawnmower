@@ -35,7 +35,7 @@ MyRobo.prototype = {
       let token = me.token;
       me.log('getToken', 'try token.expires: ' + (token ? token.expires : 'null'));
       if (token && token.expires && token.expires > Date.now()) {
-        me.log('getToken', 'use token');
+        me.log('getToken', 'use existing token');
         resolve(me.token);
         return;
       }

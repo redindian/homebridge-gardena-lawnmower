@@ -1,9 +1,7 @@
-# Homebridge-Lawnmower for Gardena Smart System
+# Homebridge support for Gardena lawnn mowers
 
-## Credits:
-This is based upon [Homebridge-Lawnmower for Gardena Smart System](https://www.npmjs.com/package/homebridge-lawnmower) by [Thorsten Pohl](https://www.npmjs.com/~thpohl)
-
-Which is based upon the great [Homebridge Plugin for Robonect](https://www.npmjs.com/package/homebridge-robonect) by [Larsan](https://www.npmjs.com/~larsan).
+This Homebridge plugin provides homekit support for Gardena lawnmowers. The requirement is a smart robot with smart system connection (e.g. smart SILENO City).
+The connection is implemented in the form of a fan, as Homekit does not yet support lawnmowers. When switched on, the robot runs for 3 hours (in future configurable via a parameter). Switching off means parking.
 
 ## Usage
 
@@ -20,3 +18,6 @@ Config as below:
 	"password": "Gardena Password"
 }  
 ```
+
+## Credits:
+This plugin is a fork from [homebridge-gardena-lawnmower](https://github.com/redindian/homebridge-gardena-lawnmower) by [redindian](https://github.com/redindian)
