@@ -13,7 +13,7 @@ You can also configure this plugin via [ConfigUI-X's settings](https://github.co
 ``` json
 "accessories": [
 	{  
-		"accessory": "gardena-mower",  
+		"accessory": "gardena-lawnmower",  
 		"name": "name-of-your-mower",  
 		"manufacturer": "Mower Manufacturer",  
 		"model": "Mower Model",
