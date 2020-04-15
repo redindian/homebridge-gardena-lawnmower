@@ -13,7 +13,7 @@
         "default": "Sileno City",
         "required": true
       },
-	  "manufacturer": {
+	"manufacturer": {
         "title": "Mower Manufacturer",
         "type": "string",
         "default": "Gardena",
@@ -24,6 +24,14 @@
         "type": "string",
         "default": "Sileno City 500",
         "required": true
+      },
+	 "mowingDurationSeconds": {
+        "title": "Mowing duration in seconds",
+        "type": "integer",
+        "default": 10800,
+	"minimum": 60,
+        "description": "Seconds of mowing duration. Defaults to 10800s (3h)."
+        "required": false
       },	  
 	  "username": {
         "title": "Username",
