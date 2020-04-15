@@ -1,3 +1,6 @@
+[![npm](https://img.shields.io/npm/v/homebridge-gardena-mower.svg?style=plastic)](https://www.npmjs.com/package/homebridge-gardena-mower)
+[![npm](https://img.shields.io/npm/dt/homebridge-gardena-mower.svg?style=plastic)](https://www.npmjs.com/package/homebridge-gardena-mower)
+[![GitHub last commit](https://img.shields.io/github/last-commit/neuhausf/homebridge-gardena-mower.svg?style=plastic)](https://github.com/neuhausf/homebridge-gardena-mower)
 # Homebridge support for Gardena lawn mowers
 
 This Homebridge plugin provides homekit support for Gardena lawnmowers. The requirement is a smart robot with smart system connection (e.g. smart SILENO City).
