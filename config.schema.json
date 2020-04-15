@@ -30,8 +30,8 @@
         "type": "integer",
         "default": 10800,
 	"minimum": 60,
+        "required": false,
         "description": "Seconds of mowing duration. Defaults to 10800s (3h)."
-        "required": false
       },	  
 	  "username": {
         "title": "Username",
