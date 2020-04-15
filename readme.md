@@ -12,7 +12,7 @@ Which is based upon the great [Homebridge Plugin for Robonect](https://www.npmjs
 Config as below:  
 ``` json
 {  
-	"accessory": "HomebridgeGardena",  
+	"accessory": "gardena-mower",  
 	"name": "name-of-your-mower",  
 	"manufacturer": "Mower Manufacturer",  
 	"model": "Mower Model",  
