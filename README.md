@@ -4,7 +4,7 @@
 # homebridge-gardena-mower
 
 This [homebridge](https://github.com/nfarina/homebridge) plugin provides homekit support for Gardena lawnmowers. The requirement is a smart robot with [smart system](https://www.gardena.com/int/products/smart) connection (e.g. smart SILENO City).
-The connection is implemented in the form of a fan, as Homekit does not yet support lawnmowers. When switched on, the robot runs for 3 hours (in future configurable via a parameter). Switching off means parking.
+The connection is implemented in the form of a fan, as Homekit does not yet support lawnmowers. When switched on, the robot runs for 3 hours (configurable via `mowingDurationSeconds`). Switching off means parking.
 
 ## Usage
 
