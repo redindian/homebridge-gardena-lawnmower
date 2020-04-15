@@ -19,7 +19,8 @@ You can also configure this plugin via [ConfigUI-X's settings](https://github.co
 		"accessory": "gardena-mower",  
 		"name": "name-of-your-mower",  
 		"manufacturer": "Mower Manufacturer",  
-		"model": "Mower Model",  
+		"model": "Mower Model",
+		"mowingDurationSeconds": 10800,
 		"username": "Gardena Username",
 		"password": "Gardena Password"
 	}  
