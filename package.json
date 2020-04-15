@@ -1,8 +1,8 @@
 {
-  "name": "homebridge-gardena-lawnmower",
-  "version": "0.0.5",
-  "author": "Red Indian",
-  "description": "Gets about lawnmowers from the gardena cloud.",
+  "name": "homebridge-gardena-mower",
+  "version": "0.1.3",
+  "author": "neuhausf",
+  "description": "Enables homekit support for smart system enabled Gardena lawnmowers.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,6 +17,7 @@
     "lawn mower",
     "gardena",
     "automower",
+    "sileno",
     "homekit"
   ],
   "dependencies": {
@@ -28,10 +29,10 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/redindian/homebridge-gardena-lawnmower.git"
+    "url": "git+https://github.com/neuhausf/homebridge-gardena-mower.git"
   },
   "bugs": {
-    "url": "https://github.com/redindian/homebridge-gardena-lawnmower/issues"
+    "url": "https://github.com/neuhausf/homebridge-gardena-mower/issues"
   },
-  "homepage": "https://github.com/redindian/homebridge-gardena-lawnmower#readme"
+  "homepage": "https://github.com/neuhausf/homebridge-gardena-mower#readme"
 }

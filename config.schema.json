@@ -1,0 +1,50 @@
+{
+  "pluginAlias": "gardena-mower",
+  "pluginType": "accessory",
+  "singular": true,
+  "headerDisplay": "Homebridge plugin for smart system enabled Gardena lawnmowers",
+  "footerDisplay": "For a detailed description, see the [README](https://github.com/neuhausf/homebridge-gardena-mower#readme) file.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "Sileno City",
+        "required": true
+      },
+	"manufacturer": {
+        "title": "Mower Manufacturer",
+        "type": "string",
+        "default": "Gardena",
+        "required": true
+      },	  
+	  "model": {
+        "title": "Mower Model",
+        "type": "string",
+        "default": "Sileno City 500",
+        "required": true
+      },
+	 "mowingDurationSeconds": {
+        "title": "Mowing duration in seconds",
+        "type": "integer",
+        "default": 10800,
+	"minimum": 60,
+        "required": false,
+        "description": "Seconds of mowing duration. Defaults to 10800s (3h)."
+      },	  
+	  "username": {
+        "title": "Username",
+        "type": "string",
+        "default": "john.doe@domain.com",
+        "required": true
+      },	  
+	  "password": {
+        "title": "Password",
+        "type": "string",
+        "default": "12345",
+        "required": true
+      }
+    }
+  }
+}

@@ -8,7 +8,7 @@ let Service, Characteristic;
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  homebridge.registerAccessory("homebridge-gardena-lawnmower", "HomebridgeGardena", MyRobo);
+  homebridge.registerAccessory("homebridge-gardena-mower", "gardena-mower", MyRobo);
 };
 
 function MyRobo(log, config) {
@@ -18,7 +18,8 @@ function MyRobo(log, config) {
   this.manufactInfo = config['manufacturer'];
   this.modelInfo = config['model'];
   this.serialNumberInfo = config['serial'];
-
+  this.mowingDurationSeconds = config['mowingDurationSeconds'] || 10800;
+  
   this.user_id = null;
   this.locationId = null;
 
@@ -35,7 +36,7 @@ MyRobo.prototype = {
       let token = me.token;
       me.log('getToken', 'try token.expires: ' + (token ? token.expires : 'null'));
       if (token && token.expires && token.expires > Date.now()) {
-        me.log('getToken', 'use token');
+        me.log('getToken', 'use existing token');
         resolve(me.token);
         return;
       }
@@ -278,12 +279,12 @@ MyRobo.prototype = {
   },
 
   setMowerOnCharacteristic: function (on, next) {
-    this.log('setMowerOnCharacteristic', {on});
+    this.log('setMowerOnCharacteristic', {on}, this.mowingDurationSeconds);
 
     if (on) {
       // start_override_timer, start_resume_schedule
       this.sendMowerCommand('start_override_timer', {
-        duration: 180
+        duration: this.mowingDurationSeconds
       }).then(() => next()).catch(next);
     } else {
       // park_until_next_timer, park_until_further_notice
