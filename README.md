@@ -27,5 +27,5 @@ You can also configure this plugin via [ConfigUI-X's settings](https://github.co
 ],
 ```
 
-## Credits:
+## Credits
 This plugin is a fork from [homebridge-gardena-lawnmower](https://github.com/redindian/homebridge-gardena-lawnmower) by [redindian](https://github.com/redindian)
