@@ -18,7 +18,8 @@ function MyRobo(log, config) {
   this.manufactInfo = config['manufacturer'];
   this.modelInfo = config['model'];
   this.serialNumberInfo = config['serial'];
-
+  this.mowingDurationSeconds = config['mowingDurationSeconds'] || 10800;
+  
   this.user_id = null;
   this.locationId = null;
 
@@ -278,12 +279,12 @@ MyRobo.prototype = {
   },
 
   setMowerOnCharacteristic: function (on, next) {
-    this.log('setMowerOnCharacteristic', {on});
+    this.log('setMowerOnCharacteristic', {on}, this.mowingDurationSeconds);
 
     if (on) {
       // start_override_timer, start_resume_schedule
       this.sendMowerCommand('start_override_timer', {
-        duration: 10800
+        duration: this.mowingDurationSeconds
       }).then(() => next()).catch(next);
     } else {
       // park_until_next_timer, park_until_further_notice
